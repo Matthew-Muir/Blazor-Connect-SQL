@@ -1,10 +1,21 @@
 ﻿@page "/data/people"
 @using DataAccessLibrary
 @using DataAccessLibrary.Models
+@using BlazorDemoUI.Models
 
 @inject IPeopleData _db
 
 <h3>People</h3>
+<h4>Insert New Person</h4>
+<EditForm Model="@newPerson" OnValidSubmit="@InsertPerson">
+    <DataAnnotationsValidator></DataAnnotationsValidator>
+    <ValidationSummary></ValidationSummary>
+
+    <InputText id="firstName" @bind-Value="newPerson.FirstName"></InputText>
+    <InputText id="lastName" @bind-Value="newPerson.LastName"></InputText>
+    <InputText id="email" @bind-Value="newPerson.Email"></InputText>
+    <button type="submit"class="btn btn-primary">Submit</button>
+</EditForm>
 
 <h4>Current People</h4>
 @if (people is null)
@@ -35,6 +46,24 @@ else
 }
 @code {
     private List<PersonModel> people;
+    private DisplayPersonModel newPerson = new DisplayPersonModel();
+
+    private async Task InsertPerson()
+    {
+        PersonModel p = new PersonModel
+            {
+                FirstName = newPerson.FirstName,
+                LastName = newPerson.LastName,
+                Email = newPerson.Email
+            };
+        await _db.InsertPerson(p);
+
+        people.Add(p);
+        //Alternatively to get data from DB rather than adding newPerson to list. Re-call
+        // people = await __db.GetPeople();
+        //Clear out added persons data.
+        newPerson = new DisplayPersonModel();
+    }
 
     protected override async Task OnInitializedAsync()
     {
